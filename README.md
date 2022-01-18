@@ -21,6 +21,10 @@ source venv/bin/activate
 
 ```bash
 pip install -r requirements.txt
+# Esto instala nuestra librería odiogarpa en modo editable
+# Así podés cambiar cosas y se actualizan automáticamente
+pip install -e .
 ```
+
 
 2. Profit
