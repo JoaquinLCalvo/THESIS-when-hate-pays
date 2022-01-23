@@ -27,4 +27,24 @@ pip install -e .
 ```
 
 
-2. Profit
+2. Cargar BBDD
+
+
+```bash
+python bin/load_db.py data/comentarios_final.csv
+```
+
+3. Analizar comentarios
+
+```bash
+python bin/analyze_comments
+```
+
+
+## Tests
+
+Usamos `pytest` más que nada para ver que funcione todo bien en el preprocesamiento.
+
+```bash
+pytest tests/
+```

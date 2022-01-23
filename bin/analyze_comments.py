@@ -1,11 +1,13 @@
+from urllib.error import HTTPError
 import fire
 import configparser
 import threading
+import time
 from tqdm.auto import tqdm
 from odiogarpa.models import Comment
 import queue
 from odiogarpa.database import get_db
-from odiogarpa.preprocessing import preprocess_text
+from odiogarpa.preprocessing import preprocess_comment
 from perspective import PerspectiveAPI
 
 config = configparser.ConfigParser()
@@ -14,7 +16,7 @@ config.read("config.ini")
 
 api_key = config["Perspective"]["API_KEY"]
 
-def analyze_comments(num_comments=None, num_workers=10):
+def analyze_comments(num_comments=None, num_workers=10, sleep_time=0.1):
     print("Connecting to db")
     db = get_db()
     comments = Comment.select().where(
@@ -35,12 +37,42 @@ def analyze_comments(num_comments=None, num_workers=10):
         db = get_db()
         perspective = PerspectiveAPI(api_key)
         while True:
+
             comment_id = q.get()
             comment = Comment.select().where(Comment.id == comment_id).get()
 
-            toxicity = perspective.analyze(comment.text)
+            current_sleep = 1
 
-            q.task_done()
+            while True:
+                try:
+                    text = comment.text
+                    preprocessed_text = preprocess_comment(text)
+
+                    ret = perspective.analyze_comment(
+                        preprocessed_text,
+                        languages=["es"]
+                    )
+                    print("="*80)
+                    print(ret)
+                    toxicity = ret["attributeScores"]["TOXICITY"]["summaryScore"]["value"]
+                    time.sleep(sleep_time)
+
+                    comment.was_processed = True
+                    comment.toxicity = toxicity
+
+                    comment.save()
+
+                    print(f"Comment updated: {preprocessed_text} --> TOXICITY: {comment.toxicity}")
+                    print("="*80)
+                    q.task_done()
+                    break
+                except HTTPError as e:
+                    print("Error analyzing")
+                    print(e.read())
+                    print(f"Sleeping and retrying {current_sleep}")
+                    time.sleep(current_sleep)
+                    current_sleep = current_sleep * 2
+
 
     print(f"Creating {num_workers} workers")
     threads = []
