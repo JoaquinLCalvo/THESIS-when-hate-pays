@@ -10,3 +10,4 @@ matplotlib
 seaborn
 fire==0.4.0
 peewee==3.14.8
+pytest
