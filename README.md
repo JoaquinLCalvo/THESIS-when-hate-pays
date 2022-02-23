@@ -5,9 +5,12 @@
 
 0. Bajar datos y ponerlos en `data/`
 
+0. Copiar `config.ini.template` a `config.ini` y poner la clave de Perspective
+
 1.
 
-a. Si estás en Conda (?)
+a. Si estás en Conda: no sé
+
 b. Si estás usando python a secas, crear virtualenv y activar
 
 Un virtualenv es un entorno distinto de librerías para cada proyecto

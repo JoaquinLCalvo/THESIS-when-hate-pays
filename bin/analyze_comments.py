@@ -59,6 +59,8 @@ def analyze_comments(num_comments=None, num_workers=10, sleep_time=0.1):
 
                     comment.was_processed = True
                     comment.toxicity = toxicity
+                    comment.preprocessed_text = preprocessed_text
+                    comment.json_response = json.dumps(ret)
 
                     comment.save()
 
