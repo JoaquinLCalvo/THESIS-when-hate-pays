@@ -82,6 +82,6 @@ def preprocess_comment(comment, emoji_wrapper="", **kwargs):
     text = re.sub("&quot;", "", text)
     
     #FIX: Estaba tirando error por comentarios que habían quedado vacíos, veamos si así se soluciona
-    text.fillna("--", inplace=True)
+    text = re.sub("\Wnan\W", "--", text)
     
     return text
