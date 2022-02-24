@@ -14,7 +14,7 @@ config = configparser.ConfigParser()
 
 config.read("config.ini")
 
-api_key = config["Perspective"]["AIzaSyDs6NtRRxaFupgtpdcfDG9BdvQLEH6_VM0"]
+api_key = "AIzaSyDs6NtRRxaFupgtpdcfDG9BdvQLEH6_VM0" #Era: config["Perspective"]["API_KEY"]
 
 def analyze_comments(num_comments=None, num_workers=10, sleep_time=0.1):
     print("Connecting to db")
@@ -27,7 +27,7 @@ def analyze_comments(num_comments=None, num_workers=10, sleep_time=0.1):
         comments = comments.limit(num_comments)
 
     print(f"{comments.count()} comments to analyze")
-    print(config["Perspective"]["AIzaSyDs6NtRRxaFupgtpdcfDG9BdvQLEH6_VM0"])
+    print(config["Perspective"]["API_KEY"])
 
     q = queue.Queue()
     for comment in tqdm(comments):
