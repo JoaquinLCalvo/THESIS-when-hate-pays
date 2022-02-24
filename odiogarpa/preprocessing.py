@@ -87,4 +87,6 @@ def preprocess_comment(comment, emoji_wrapper="", **kwargs):
     if text == "":
         text = re.sub('', '--', text)
     
+    text = re.sub("--", "[no analizable]", text)
+    
     return text
