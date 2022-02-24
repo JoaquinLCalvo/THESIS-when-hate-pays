@@ -83,5 +83,8 @@ def preprocess_comment(comment, emoji_wrapper="", **kwargs):
     
     #FIX: Estaba tirando error por htmls y comentarios que habían quedado vacíos, veamos si así se soluciona
     text = re.sub('<[^<]+?>', '', text)
+        
+    if text == "":
+        text = re.sub('', '--', text)
     
     return text
