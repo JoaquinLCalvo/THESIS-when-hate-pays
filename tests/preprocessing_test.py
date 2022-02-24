@@ -12,9 +12,9 @@ def test_it_converts_emojis():
     assert preprocess_comment(comment) == "cara sonriendo con ojos grandes genial!"
     
 def test_it_erases_html():
-    comment = "ºº<br>----"
+    comment = "<br>quiero comer"
     
-    assert preprocess_comment(comment) == "<br>---"
+    assert preprocess_comment(comment) == "quiero comer"
 
 def test_it_converts_emoticon():
     comment = "XD xd buenísimo mal"
