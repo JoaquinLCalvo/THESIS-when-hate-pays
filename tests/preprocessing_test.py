@@ -24,6 +24,9 @@ def test_it_converts_emoticon():
 def test_it_solves_empty_comments():
     comment = ""
     
-    assert preprocess_comment(comment) == "--"
+    assert preprocess_comment(comment) == "[no analizable]"
 
-
+def test_it_solves_multiple_emojis():
+    comment = "☹☹☹☹☹☹☹☹☹☹☹☹☹☹"
+    
+    assert preprocess_comment(comment) == "[no analizable]"
