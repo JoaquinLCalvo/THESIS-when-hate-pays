@@ -58,7 +58,7 @@ def analyze_comments(num_comments=None, num_workers=10, sleep_time=0.1):
                             "PROFANITY_EXPERIMENTAL": {},
                             "THREAT_EXPERIMENTAL": {},
                             "INSULT_EXPERIMENTAL": {}
-                            )
+                            })
                             
                     print("="*80)
                     print(ret)
