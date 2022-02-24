@@ -50,8 +50,16 @@ def analyze_comments(num_comments=None, num_workers=10, sleep_time=0.1):
 
                     ret = perspective.analyze_comment(
                         preprocessed_text,
-                        languages=["es"]
-                    )
+                        languages=["es"],
+                        requested_attributes={
+                            "TOXICITY":{}, 
+                            "SEVERE_TOXICITY":{}, 
+                            "IDENTITY_ATTACK_EXPERIMENTAL": {},
+                            "PROFANITY_EXPERIMENTAL": {},
+                            "THREAT_EXPERIMENTAL": {},
+                            "INSULT_EXPERIMENTAL": {}
+                            )
+                            
                     print("="*80)
                     print(ret)
                     toxicity = ret["attributeScores"]["TOXICITY"]["summaryScore"]["value"]
