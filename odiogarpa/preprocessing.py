@@ -78,15 +78,11 @@ def preprocess_comment(comment, emoji_wrapper="", **kwargs):
     text = re.sub("ahre", "irónico", text)
     text = re.sub("a re", "irónico", text)
     text = re.sub("arhE", "irónico", text)
-    text = re.sub("&quot;", "", text)
-    text = re.sub("&quot;", "", text)
-    
-    #FIX: Estaba tirando error por htmls y comentarios que habían quedado vacíos, veamos si así se soluciona
     text = re.sub('<[^<]+?>', '', text)
         
     if text == "":
-        text = re.sub('', '--', text)
+        text = re.sub('', '[no analizable]', text)
     
-    text = re.sub("--", "[no analizable]", text)
+    text = text[:2000] + (text[2000:] and '..')
     
     return text
