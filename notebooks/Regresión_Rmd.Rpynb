@@ -1,0 +1,1001 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyNRF1diXn7dPk7iK6tKy7wL",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "ir",
+      "display_name": "R"
+    },
+    "language_info": {
+      "name": "R"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/JoaquinLCalvo/TESIS-Cuando-el-odio-garpa/blob/main/notebooks/Regresi%C3%B3n_Rmd.Rpynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "install.packages('lme4')\n",
+        "df <- read.csv('comentarios_analizados_small.csv', header = TRUE)\n",
+        "\n",
+        "sample(df, 10)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 1000
+        },
+        "id": "jPw0fc0KUh94",
+        "outputId": "37d3efb3-3d82-40f4-d660-0926389974de"
+      },
+      "execution_count": 1,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "Installing package into ‘/usr/local/lib/R/site-library’\n",
+            "(as ‘lib’ is unspecified)\n",
+            "\n",
+            "also installing the dependencies ‘minqa’, ‘nloptr’, ‘Rcpp’, ‘RcppEigen’\n",
+            "\n",
+            "\n"
+          ]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/html": [
+              "<table class=\"dataframe\">\n",
+              "<caption>A data.frame: 431629 × 10</caption>\n",
+              "<thead>\n",
+              "\t<tr><th scope=col>replyCount</th><th scope=col>likeCount</th><th scope=col>authorName</th><th scope=col>IDENTITY_ATTACK_EXPERIMENTAL</th><th scope=col>SEVERE_TOXICITY</th><th scope=col>dislikes_video</th><th scope=col>likes_video</th><th scope=col>cantidad_comentarios</th><th scope=col>toxicity</th><th scope=col>canal</th></tr>\n",
+              "\t<tr><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th></tr>\n",
+              "</thead>\n",
+              "<tbody>\n",
+              "\t<tr><td> 0</td><td>0</td><td>SAAR 94 NUEVO CANAL        </td><td>0.074238000</td><td>0.038955480</td><td>187</td><td>17800</td><td>1919</td><td>0.146869100</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>franco barroso             </td><td>0.112633556</td><td>0.072106820</td><td>187</td><td>17800</td><td>1919</td><td>0.088079050</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Juan David Lobaton         </td><td>0.054531623</td><td>0.119623110</td><td>187</td><td>17800</td><td>1919</td><td>0.095092640</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>1</td><td>Joel Munguía               </td><td>0.021494410</td><td>0.027136052</td><td>187</td><td>17800</td><td>1919</td><td>0.046990495</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Fernando Hernández         </td><td>0.094217250</td><td>0.038955480</td><td>187</td><td>17800</td><td>1919</td><td>0.042356880</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>DanysModz                  </td><td>0.166131900</td><td>0.429123700</td><td>187</td><td>17800</td><td>1919</td><td>0.623573600</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>1</td><td>xeneize nacional 1899      </td><td>0.009226609</td><td>0.012232397</td><td>187</td><td>17800</td><td>1919</td><td>0.016033355</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>BJ MM                      </td><td>0.120469086</td><td>0.038955480</td><td>187</td><td>17800</td><td>1919</td><td>0.032566514</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>PendexMaximo               </td><td>0.001084917</td><td>0.002543265</td><td>187</td><td>17800</td><td>1919</td><td>0.006230740</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Abraham Escamilla Trejo    </td><td>0.025739571</td><td>0.018766490</td><td>187</td><td>17800</td><td>1919</td><td>0.024884904</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Victor manuel Trejos ospina</td><td>0.204462870</td><td>0.320438620</td><td>187</td><td>17800</td><td>1919</td><td>0.784940500</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Victor manuel Trejos ospina</td><td>0.265624100</td><td>0.202463850</td><td>187</td><td>17800</td><td>1919</td><td>0.577260100</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Victor manuel Trejos ospina</td><td>0.152086560</td><td>0.049135607</td><td>187</td><td>17800</td><td>1919</td><td>0.139843580</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Victor manuel Trejos ospina</td><td>0.060442220</td><td>0.037038352</td><td>187</td><td>17800</td><td>1919</td><td>0.046990495</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Victor manuel Trejos ospina</td><td>0.034712363</td><td>0.017317241</td><td>187</td><td>17800</td><td>1919</td><td>0.020197260</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>hatake kakashi             </td><td>0.051193107</td><td>0.028691104</td><td>187</td><td>17800</td><td>1919</td><td>0.028170383</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>1</td><td>Muriel The Hedgehog        </td><td>0.113417520</td><td>0.281967220</td><td>187</td><td>17800</td><td>1919</td><td>0.762518000</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Jesus Loud xD              </td><td>0.127171590</td><td>0.072106820</td><td>187</td><td>17800</td><td>1919</td><td>0.191891630</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 2</td><td>0</td><td>Optimus Gilberto           </td><td>0.064463110</td><td>0.072106820</td><td>187</td><td>17800</td><td>1919</td><td>0.100274290</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td>NA</td><td>1</td><td>RG87                       </td><td>0.175524730</td><td>0.072106820</td><td>187</td><td>17800</td><td>1919</td><td>0.249799490</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td>NA</td><td>1</td><td>TheMrRojo                  </td><td>0.070063600</td><td>0.072106820</td><td>187</td><td>17800</td><td>1919</td><td>0.135210650</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>3</td><td>Ivan                       </td><td>0.005255030</td><td>0.003994765</td><td>187</td><td>17800</td><td>1919</td><td>0.007764014</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>2</td><td>Ssj infinito               </td><td>0.753528060</td><td>0.420229400</td><td>187</td><td>17800</td><td>1919</td><td>0.268748940</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 1</td><td>0</td><td>Blackwolf7797              </td><td>0.197024800</td><td>0.164414420</td><td>187</td><td>17800</td><td>1919</td><td>0.249830650</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td>NA</td><td>1</td><td>TheMrRojo                  </td><td>0.037146024</td><td>0.011224411</td><td>187</td><td>17800</td><td>1919</td><td>0.007764057</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Rollshold                  </td><td>0.018563686</td><td>0.017679274</td><td>187</td><td>17800</td><td>1919</td><td>0.042760790</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>1</td><td>Ignacio Girón Jiménez      </td><td>0.090194955</td><td>0.072106820</td><td>187</td><td>17800</td><td>1919</td><td>0.191891630</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Batstian El proo!!         </td><td>0.357983770</td><td>0.530632440</td><td>187</td><td>17800</td><td>1919</td><td>0.562498900</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Danilo Galeano             </td><td>0.052295290</td><td>0.044813935</td><td>187</td><td>17800</td><td>1919</td><td>0.048343346</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Lanzaguisante_Gamer        </td><td>0.008834558</td><td>0.009930107</td><td>187</td><td>17800</td><td>1919</td><td>0.018265212</td><td>AleVera Oficial</td></tr>\n",
+              "\t<tr><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Ux7 me.g                    </td><td>0.13966072</td><td>0.22675600</td><td>279</td><td>31096</td><td>4258</td><td>0.57726010</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>1</td><td>The legend Tops and Games xd</td><td>0.38971007</td><td>0.28196722</td><td>279</td><td>31096</td><td>4258</td><td>0.29729780</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>1</td><td>Ignacio Perotti robledo     </td><td>0.31929135</td><td>0.42022940</td><td>279</td><td>31096</td><td>4258</td><td>0.64898986</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>guadalupe dornel            </td><td>0.05393293</td><td>0.02496678</td><td>279</td><td>31096</td><td>4258</td><td>0.02224877</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>anonymous gamer             </td><td>0.33395293</td><td>0.08454568</td><td>279</td><td>31096</td><td>4258</td><td>0.07829838</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>sofia jimenez               </td><td>0.31929135</td><td>0.53063244</td><td>279</td><td>31096</td><td>4258</td><td>0.41716862</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Karina Vamos Rincon Caro    </td><td>0.01205349</td><td>0.01229900</td><td>279</td><td>31096</td><td>4258</td><td>0.01542554</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>auguschan 6                 </td><td>0.07563151</td><td>0.11040185</td><td>279</td><td>31096</td><td>4258</td><td>0.20039219</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Acm 0                       </td><td>0.08266538</td><td>0.04143556</td><td>279</td><td>31096</td><td>4258</td><td>0.08861402</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>1</td><td>juega agustin 10            </td><td>0.09593718</td><td>0.07210682</td><td>279</td><td>31096</td><td>4258</td><td>0.08883341</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Pablo Castillo              </td><td>0.61728394</td><td>0.30593607</td><td>279</td><td>31096</td><td>4258</td><td>0.51454425</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Noelia Araujo               </td><td>0.27269745</td><td>0.36701694</td><td>279</td><td>31096</td><td>4258</td><td>0.41328582</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>•mika°•°                    </td><td>0.31128025</td><td>0.16441442</td><td>279</td><td>31096</td><td>4258</td><td>0.23076516</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Maria emilia Moreno         </td><td>0.06782010</td><td>0.03133155</td><td>279</td><td>31096</td><td>4258</td><td>0.04514724</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Rakun Of Guar               </td><td>0.12046909</td><td>0.13112165</td><td>279</td><td>31096</td><td>4258</td><td>0.41721338</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>°•kairi•°                   </td><td>0.38971007</td><td>0.65721040</td><td>279</td><td>31096</td><td>4258</td><td>0.64408785</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Jhonson Jimenez             </td><td>0.07555257</td><td>0.07210682</td><td>279</td><td>31096</td><td>4258</td><td>0.13800086</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>\\\\ ITACHI \\\\            </td><td>0.27133740</td><td>0.32946962</td><td>279</td><td>31096</td><td>4258</td><td>0.60767090</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Pep Miralles Berenguer      </td><td>0.03809290</td><td>0.03358242</td><td>279</td><td>31096</td><td>4258</td><td>0.04282416</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>el magma                    </td><td>0.17804669</td><td>0.07210682</td><td>279</td><td>31096</td><td>4258</td><td>0.17166190</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Daniel Lema                 </td><td>0.12046909</td><td>0.03895548</td><td>279</td><td>31096</td><td>4258</td><td>0.04699050</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Pep Miralles Berenguer      </td><td>0.04940150</td><td>0.02987920</td><td>279</td><td>31096</td><td>4258</td><td>0.02276497</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>1</td><td>•Kispe SNT•                 </td><td>0.01332888</td><td>0.01798511</td><td>279</td><td>31096</td><td>4258</td><td>0.04927650</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>Que                         </td><td>0.07235029</td><td>0.07210682</td><td>279</td><td>31096</td><td>4258</td><td>0.19189163</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>QUIENSOHBO                  </td><td>0.01753717</td><td>0.04060337</td><td>279</td><td>31096</td><td>4258</td><td>0.03203740</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 2</td><td>2</td><td>COCA COLA                   </td><td>0.38971007</td><td>0.65721040</td><td>279</td><td>31096</td><td>4258</td><td>0.78449900</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td>NA</td><td>1</td><td>COCA COLA                   </td><td>0.02544575</td><td>0.04557358</td><td>279</td><td>31096</td><td>4258</td><td>0.05912663</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td>NA</td><td>0</td><td>¡ 笑 [ Cløud aff’s] !       </td><td>0.06855745</td><td>0.02427984</td><td>279</td><td>31096</td><td>4258</td><td>0.06139182</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>0</td><td>aztez rockYT                </td><td>0.09629715</td><td>0.07210682</td><td>279</td><td>31096</td><td>4258</td><td>0.06594063</td><td>NICO VILLA</td></tr>\n",
+              "\t<tr><td> 0</td><td>1</td><td>Marcos Coloso               </td><td>        NA</td><td>        NA</td><td> NA</td><td>   NA</td><td>  NA</td><td>        NA</td><td>NIC       </td></tr>\n",
+              "</tbody>\n",
+              "</table>\n"
+            ],
+            "text/markdown": "\nA data.frame: 431629 × 10\n\n| replyCount &lt;dbl&gt; | likeCount &lt;int&gt; | authorName &lt;chr&gt; | IDENTITY_ATTACK_EXPERIMENTAL &lt;dbl&gt; | SEVERE_TOXICITY &lt;dbl&gt; | dislikes_video &lt;int&gt; | likes_video &lt;int&gt; | cantidad_comentarios &lt;int&gt; | toxicity &lt;dbl&gt; | canal &lt;chr&gt; |\n|---|---|---|---|---|---|---|---|---|---|\n|  0 | 0 | SAAR 94 NUEVO CANAL         | 0.074238000 | 0.038955480 | 187 | 17800 | 1919 | 0.146869100 | AleVera Oficial |\n|  0 | 0 | franco barroso              | 0.112633556 | 0.072106820 | 187 | 17800 | 1919 | 0.088079050 | AleVera Oficial |\n|  0 | 0 | Juan David Lobaton          | 0.054531623 | 0.119623110 | 187 | 17800 | 1919 | 0.095092640 | AleVera Oficial |\n|  0 | 1 | Joel Munguía                | 0.021494410 | 0.027136052 | 187 | 17800 | 1919 | 0.046990495 | AleVera Oficial |\n|  0 | 0 | Fernando Hernández          | 0.094217250 | 0.038955480 | 187 | 17800 | 1919 | 0.042356880 | AleVera Oficial |\n|  0 | 0 | DanysModz                   | 0.166131900 | 0.429123700 | 187 | 17800 | 1919 | 0.623573600 | AleVera Oficial |\n|  0 | 1 | xeneize nacional 1899       | 0.009226609 | 0.012232397 | 187 | 17800 | 1919 | 0.016033355 | AleVera Oficial |\n|  0 | 0 | BJ MM                       | 0.120469086 | 0.038955480 | 187 | 17800 | 1919 | 0.032566514 | AleVera Oficial |\n|  0 | 0 | PendexMaximo                | 0.001084917 | 0.002543265 | 187 | 17800 | 1919 | 0.006230740 | AleVera Oficial |\n|  0 | 0 | Abraham Escamilla Trejo     | 0.025739571 | 0.018766490 | 187 | 17800 | 1919 | 0.024884904 | AleVera Oficial |\n|  0 | 0 | Victor manuel Trejos ospina | 0.204462870 | 0.320438620 | 187 | 17800 | 1919 | 0.784940500 | AleVera Oficial |\n|  0 | 0 | Victor manuel Trejos ospina | 0.265624100 | 0.202463850 | 187 | 17800 | 1919 | 0.577260100 | AleVera Oficial |\n|  0 | 0 | Victor manuel Trejos ospina | 0.152086560 | 0.049135607 | 187 | 17800 | 1919 | 0.139843580 | AleVera Oficial |\n|  0 | 0 | Victor manuel Trejos ospina | 0.060442220 | 0.037038352 | 187 | 17800 | 1919 | 0.046990495 | AleVera Oficial |\n|  0 | 0 | Victor manuel Trejos ospina | 0.034712363 | 0.017317241 | 187 | 17800 | 1919 | 0.020197260 | AleVera Oficial |\n|  0 | 0 | hatake kakashi              | 0.051193107 | 0.028691104 | 187 | 17800 | 1919 | 0.028170383 | AleVera Oficial |\n|  0 | 1 | Muriel The Hedgehog         | 0.113417520 | 0.281967220 | 187 | 17800 | 1919 | 0.762518000 | AleVera Oficial |\n|  0 | 0 | Jesus Loud xD               | 0.127171590 | 0.072106820 | 187 | 17800 | 1919 | 0.191891630 | AleVera Oficial |\n|  2 | 0 | Optimus Gilberto            | 0.064463110 | 0.072106820 | 187 | 17800 | 1919 | 0.100274290 | AleVera Oficial |\n| NA | 1 | RG87                        | 0.175524730 | 0.072106820 | 187 | 17800 | 1919 | 0.249799490 | AleVera Oficial |\n| NA | 1 | TheMrRojo                   | 0.070063600 | 0.072106820 | 187 | 17800 | 1919 | 0.135210650 | AleVera Oficial |\n|  0 | 3 | Ivan                        | 0.005255030 | 0.003994765 | 187 | 17800 | 1919 | 0.007764014 | AleVera Oficial |\n|  0 | 2 | Ssj infinito                | 0.753528060 | 0.420229400 | 187 | 17800 | 1919 | 0.268748940 | AleVera Oficial |\n|  1 | 0 | Blackwolf7797               | 0.197024800 | 0.164414420 | 187 | 17800 | 1919 | 0.249830650 | AleVera Oficial |\n| NA | 1 | TheMrRojo                   | 0.037146024 | 0.011224411 | 187 | 17800 | 1919 | 0.007764057 | AleVera Oficial |\n|  0 | 0 | Rollshold                   | 0.018563686 | 0.017679274 | 187 | 17800 | 1919 | 0.042760790 | AleVera Oficial |\n|  0 | 1 | Ignacio Girón Jiménez       | 0.090194955 | 0.072106820 | 187 | 17800 | 1919 | 0.191891630 | AleVera Oficial |\n|  0 | 0 | Batstian El proo!!          | 0.357983770 | 0.530632440 | 187 | 17800 | 1919 | 0.562498900 | AleVera Oficial |\n|  0 | 0 | Danilo Galeano              | 0.052295290 | 0.044813935 | 187 | 17800 | 1919 | 0.048343346 | AleVera Oficial |\n|  0 | 0 | Lanzaguisante_Gamer         | 0.008834558 | 0.009930107 | 187 | 17800 | 1919 | 0.018265212 | AleVera Oficial |\n| ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ |\n|  0 | 0 | Ux7 me.g                     | 0.13966072 | 0.22675600 | 279 | 31096 | 4258 | 0.57726010 | NICO VILLA |\n|  0 | 1 | The legend Tops and Games xd | 0.38971007 | 0.28196722 | 279 | 31096 | 4258 | 0.29729780 | NICO VILLA |\n|  0 | 1 | Ignacio Perotti robledo      | 0.31929135 | 0.42022940 | 279 | 31096 | 4258 | 0.64898986 | NICO VILLA |\n|  0 | 0 | guadalupe dornel             | 0.05393293 | 0.02496678 | 279 | 31096 | 4258 | 0.02224877 | NICO VILLA |\n|  0 | 0 | anonymous gamer              | 0.33395293 | 0.08454568 | 279 | 31096 | 4258 | 0.07829838 | NICO VILLA |\n|  0 | 0 | sofia jimenez                | 0.31929135 | 0.53063244 | 279 | 31096 | 4258 | 0.41716862 | NICO VILLA |\n|  0 | 0 | Karina Vamos Rincon Caro     | 0.01205349 | 0.01229900 | 279 | 31096 | 4258 | 0.01542554 | NICO VILLA |\n|  0 | 0 | auguschan 6                  | 0.07563151 | 0.11040185 | 279 | 31096 | 4258 | 0.20039219 | NICO VILLA |\n|  0 | 0 | Acm 0                        | 0.08266538 | 0.04143556 | 279 | 31096 | 4258 | 0.08861402 | NICO VILLA |\n|  0 | 1 | juega agustin 10             | 0.09593718 | 0.07210682 | 279 | 31096 | 4258 | 0.08883341 | NICO VILLA |\n|  0 | 0 | Pablo Castillo               | 0.61728394 | 0.30593607 | 279 | 31096 | 4258 | 0.51454425 | NICO VILLA |\n|  0 | 0 | Noelia Araujo                | 0.27269745 | 0.36701694 | 279 | 31096 | 4258 | 0.41328582 | NICO VILLA |\n|  0 | 0 | •mika°•°                     | 0.31128025 | 0.16441442 | 279 | 31096 | 4258 | 0.23076516 | NICO VILLA |\n|  0 | 0 | Maria emilia Moreno          | 0.06782010 | 0.03133155 | 279 | 31096 | 4258 | 0.04514724 | NICO VILLA |\n|  0 | 0 | Rakun Of Guar                | 0.12046909 | 0.13112165 | 279 | 31096 | 4258 | 0.41721338 | NICO VILLA |\n|  0 | 0 | °•kairi•°                    | 0.38971007 | 0.65721040 | 279 | 31096 | 4258 | 0.64408785 | NICO VILLA |\n|  0 | 0 | Jhonson Jimenez              | 0.07555257 | 0.07210682 | 279 | 31096 | 4258 | 0.13800086 | NICO VILLA |\n|  0 | 0 | \\\\ ITACHI \\\\             | 0.27133740 | 0.32946962 | 279 | 31096 | 4258 | 0.60767090 | NICO VILLA |\n|  0 | 0 | Pep Miralles Berenguer       | 0.03809290 | 0.03358242 | 279 | 31096 | 4258 | 0.04282416 | NICO VILLA |\n|  0 | 0 | el magma                     | 0.17804669 | 0.07210682 | 279 | 31096 | 4258 | 0.17166190 | NICO VILLA |\n|  0 | 0 | Daniel Lema                  | 0.12046909 | 0.03895548 | 279 | 31096 | 4258 | 0.04699050 | NICO VILLA |\n|  0 | 0 | Pep Miralles Berenguer       | 0.04940150 | 0.02987920 | 279 | 31096 | 4258 | 0.02276497 | NICO VILLA |\n|  0 | 1 | •Kispe SNT•                  | 0.01332888 | 0.01798511 | 279 | 31096 | 4258 | 0.04927650 | NICO VILLA |\n|  0 | 0 | Que                          | 0.07235029 | 0.07210682 | 279 | 31096 | 4258 | 0.19189163 | NICO VILLA |\n|  0 | 0 | QUIENSOHBO                   | 0.01753717 | 0.04060337 | 279 | 31096 | 4258 | 0.03203740 | NICO VILLA |\n|  2 | 2 | COCA COLA                    | 0.38971007 | 0.65721040 | 279 | 31096 | 4258 | 0.78449900 | NICO VILLA |\n| NA | 1 | COCA COLA                    | 0.02544575 | 0.04557358 | 279 | 31096 | 4258 | 0.05912663 | NICO VILLA |\n| NA | 0 | ¡ 笑 [ Cløud aff’s] !        | 0.06855745 | 0.02427984 | 279 | 31096 | 4258 | 0.06139182 | NICO VILLA |\n|  0 | 0 | aztez rockYT                 | 0.09629715 | 0.07210682 | 279 | 31096 | 4258 | 0.06594063 | NICO VILLA |\n|  0 | 1 | Marcos Coloso                |         NA |         NA |  NA |    NA |   NA |         NA | NIC        |\n\n",
+            "text/latex": "A data.frame: 431629 × 10\n\\begin{tabular}{llllllllll}\n replyCount & likeCount & authorName & IDENTITY\\_ATTACK\\_EXPERIMENTAL & SEVERE\\_TOXICITY & dislikes\\_video & likes\\_video & cantidad\\_comentarios & toxicity & canal\\\\\n <dbl> & <int> & <chr> & <dbl> & <dbl> & <int> & <int> & <int> & <dbl> & <chr>\\\\\n\\hline\n\t  0 & 0 & SAAR 94 NUEVO CANAL         & 0.074238000 & 0.038955480 & 187 & 17800 & 1919 & 0.146869100 & AleVera Oficial\\\\\n\t  0 & 0 & franco barroso              & 0.112633556 & 0.072106820 & 187 & 17800 & 1919 & 0.088079050 & AleVera Oficial\\\\\n\t  0 & 0 & Juan David Lobaton          & 0.054531623 & 0.119623110 & 187 & 17800 & 1919 & 0.095092640 & AleVera Oficial\\\\\n\t  0 & 1 & Joel Munguía                & 0.021494410 & 0.027136052 & 187 & 17800 & 1919 & 0.046990495 & AleVera Oficial\\\\\n\t  0 & 0 & Fernando Hernández          & 0.094217250 & 0.038955480 & 187 & 17800 & 1919 & 0.042356880 & AleVera Oficial\\\\\n\t  0 & 0 & DanysModz                   & 0.166131900 & 0.429123700 & 187 & 17800 & 1919 & 0.623573600 & AleVera Oficial\\\\\n\t  0 & 1 & xeneize nacional 1899       & 0.009226609 & 0.012232397 & 187 & 17800 & 1919 & 0.016033355 & AleVera Oficial\\\\\n\t  0 & 0 & BJ MM                       & 0.120469086 & 0.038955480 & 187 & 17800 & 1919 & 0.032566514 & AleVera Oficial\\\\\n\t  0 & 0 & PendexMaximo                & 0.001084917 & 0.002543265 & 187 & 17800 & 1919 & 0.006230740 & AleVera Oficial\\\\\n\t  0 & 0 & Abraham Escamilla Trejo     & 0.025739571 & 0.018766490 & 187 & 17800 & 1919 & 0.024884904 & AleVera Oficial\\\\\n\t  0 & 0 & Victor manuel Trejos ospina & 0.204462870 & 0.320438620 & 187 & 17800 & 1919 & 0.784940500 & AleVera Oficial\\\\\n\t  0 & 0 & Victor manuel Trejos ospina & 0.265624100 & 0.202463850 & 187 & 17800 & 1919 & 0.577260100 & AleVera Oficial\\\\\n\t  0 & 0 & Victor manuel Trejos ospina & 0.152086560 & 0.049135607 & 187 & 17800 & 1919 & 0.139843580 & AleVera Oficial\\\\\n\t  0 & 0 & Victor manuel Trejos ospina & 0.060442220 & 0.037038352 & 187 & 17800 & 1919 & 0.046990495 & AleVera Oficial\\\\\n\t  0 & 0 & Victor manuel Trejos ospina & 0.034712363 & 0.017317241 & 187 & 17800 & 1919 & 0.020197260 & AleVera Oficial\\\\\n\t  0 & 0 & hatake kakashi              & 0.051193107 & 0.028691104 & 187 & 17800 & 1919 & 0.028170383 & AleVera Oficial\\\\\n\t  0 & 1 & Muriel The Hedgehog         & 0.113417520 & 0.281967220 & 187 & 17800 & 1919 & 0.762518000 & AleVera Oficial\\\\\n\t  0 & 0 & Jesus Loud xD               & 0.127171590 & 0.072106820 & 187 & 17800 & 1919 & 0.191891630 & AleVera Oficial\\\\\n\t  2 & 0 & Optimus Gilberto            & 0.064463110 & 0.072106820 & 187 & 17800 & 1919 & 0.100274290 & AleVera Oficial\\\\\n\t NA & 1 & RG87                        & 0.175524730 & 0.072106820 & 187 & 17800 & 1919 & 0.249799490 & AleVera Oficial\\\\\n\t NA & 1 & TheMrRojo                   & 0.070063600 & 0.072106820 & 187 & 17800 & 1919 & 0.135210650 & AleVera Oficial\\\\\n\t  0 & 3 & Ivan                        & 0.005255030 & 0.003994765 & 187 & 17800 & 1919 & 0.007764014 & AleVera Oficial\\\\\n\t  0 & 2 & Ssj infinito                & 0.753528060 & 0.420229400 & 187 & 17800 & 1919 & 0.268748940 & AleVera Oficial\\\\\n\t  1 & 0 & Blackwolf7797               & 0.197024800 & 0.164414420 & 187 & 17800 & 1919 & 0.249830650 & AleVera Oficial\\\\\n\t NA & 1 & TheMrRojo                   & 0.037146024 & 0.011224411 & 187 & 17800 & 1919 & 0.007764057 & AleVera Oficial\\\\\n\t  0 & 0 & Rollshold                   & 0.018563686 & 0.017679274 & 187 & 17800 & 1919 & 0.042760790 & AleVera Oficial\\\\\n\t  0 & 1 & Ignacio Girón Jiménez       & 0.090194955 & 0.072106820 & 187 & 17800 & 1919 & 0.191891630 & AleVera Oficial\\\\\n\t  0 & 0 & Batstian El proo!!          & 0.357983770 & 0.530632440 & 187 & 17800 & 1919 & 0.562498900 & AleVera Oficial\\\\\n\t  0 & 0 & Danilo Galeano              & 0.052295290 & 0.044813935 & 187 & 17800 & 1919 & 0.048343346 & AleVera Oficial\\\\\n\t  0 & 0 & Lanzaguisante\\_Gamer         & 0.008834558 & 0.009930107 & 187 & 17800 & 1919 & 0.018265212 & AleVera Oficial\\\\\n\t ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮\\\\\n\t  0 & 0 & Ux7 me.g                     & 0.13966072 & 0.22675600 & 279 & 31096 & 4258 & 0.57726010 & NICO VILLA\\\\\n\t  0 & 1 & The legend Tops and Games xd & 0.38971007 & 0.28196722 & 279 & 31096 & 4258 & 0.29729780 & NICO VILLA\\\\\n\t  0 & 1 & Ignacio Perotti robledo      & 0.31929135 & 0.42022940 & 279 & 31096 & 4258 & 0.64898986 & NICO VILLA\\\\\n\t  0 & 0 & guadalupe dornel             & 0.05393293 & 0.02496678 & 279 & 31096 & 4258 & 0.02224877 & NICO VILLA\\\\\n\t  0 & 0 & anonymous gamer              & 0.33395293 & 0.08454568 & 279 & 31096 & 4258 & 0.07829838 & NICO VILLA\\\\\n\t  0 & 0 & sofia jimenez                & 0.31929135 & 0.53063244 & 279 & 31096 & 4258 & 0.41716862 & NICO VILLA\\\\\n\t  0 & 0 & Karina Vamos Rincon Caro     & 0.01205349 & 0.01229900 & 279 & 31096 & 4258 & 0.01542554 & NICO VILLA\\\\\n\t  0 & 0 & auguschan 6                  & 0.07563151 & 0.11040185 & 279 & 31096 & 4258 & 0.20039219 & NICO VILLA\\\\\n\t  0 & 0 & Acm 0                        & 0.08266538 & 0.04143556 & 279 & 31096 & 4258 & 0.08861402 & NICO VILLA\\\\\n\t  0 & 1 & juega agustin 10             & 0.09593718 & 0.07210682 & 279 & 31096 & 4258 & 0.08883341 & NICO VILLA\\\\\n\t  0 & 0 & Pablo Castillo               & 0.61728394 & 0.30593607 & 279 & 31096 & 4258 & 0.51454425 & NICO VILLA\\\\\n\t  0 & 0 & Noelia Araujo                & 0.27269745 & 0.36701694 & 279 & 31096 & 4258 & 0.41328582 & NICO VILLA\\\\\n\t  0 & 0 & •mika°•°                     & 0.31128025 & 0.16441442 & 279 & 31096 & 4258 & 0.23076516 & NICO VILLA\\\\\n\t  0 & 0 & Maria emilia Moreno          & 0.06782010 & 0.03133155 & 279 & 31096 & 4258 & 0.04514724 & NICO VILLA\\\\\n\t  0 & 0 & Rakun Of Guar                & 0.12046909 & 0.13112165 & 279 & 31096 & 4258 & 0.41721338 & NICO VILLA\\\\\n\t  0 & 0 & °•kairi•°                    & 0.38971007 & 0.65721040 & 279 & 31096 & 4258 & 0.64408785 & NICO VILLA\\\\\n\t  0 & 0 & Jhonson Jimenez              & 0.07555257 & 0.07210682 & 279 & 31096 & 4258 & 0.13800086 & NICO VILLA\\\\\n\t  0 & 0 & \\textbackslash{}\\textbackslash{} ITACHI \\textbackslash{}\\textbackslash{}             & 0.27133740 & 0.32946962 & 279 & 31096 & 4258 & 0.60767090 & NICO VILLA\\\\\n\t  0 & 0 & Pep Miralles Berenguer       & 0.03809290 & 0.03358242 & 279 & 31096 & 4258 & 0.04282416 & NICO VILLA\\\\\n\t  0 & 0 & el magma                     & 0.17804669 & 0.07210682 & 279 & 31096 & 4258 & 0.17166190 & NICO VILLA\\\\\n\t  0 & 0 & Daniel Lema                  & 0.12046909 & 0.03895548 & 279 & 31096 & 4258 & 0.04699050 & NICO VILLA\\\\\n\t  0 & 0 & Pep Miralles Berenguer       & 0.04940150 & 0.02987920 & 279 & 31096 & 4258 & 0.02276497 & NICO VILLA\\\\\n\t  0 & 1 & •Kispe SNT•                  & 0.01332888 & 0.01798511 & 279 & 31096 & 4258 & 0.04927650 & NICO VILLA\\\\\n\t  0 & 0 & Que                          & 0.07235029 & 0.07210682 & 279 & 31096 & 4258 & 0.19189163 & NICO VILLA\\\\\n\t  0 & 0 & QUIENSOHBO                   & 0.01753717 & 0.04060337 & 279 & 31096 & 4258 & 0.03203740 & NICO VILLA\\\\\n\t  2 & 2 & COCA COLA                    & 0.38971007 & 0.65721040 & 279 & 31096 & 4258 & 0.78449900 & NICO VILLA\\\\\n\t NA & 1 & COCA COLA                    & 0.02544575 & 0.04557358 & 279 & 31096 & 4258 & 0.05912663 & NICO VILLA\\\\\n\t NA & 0 & ¡ 笑 {[} Cløud aff’s{]} !        & 0.06855745 & 0.02427984 & 279 & 31096 & 4258 & 0.06139182 & NICO VILLA\\\\\n\t  0 & 0 & aztez rockYT                 & 0.09629715 & 0.07210682 & 279 & 31096 & 4258 & 0.06594063 & NICO VILLA\\\\\n\t  0 & 1 & Marcos Coloso                &         NA &         NA &  NA &    NA &   NA &         NA & NIC       \\\\\n\\end{tabular}\n",
+            "text/plain": [
+              "       replyCount likeCount authorName                  \n",
+              "1       0         0         SAAR 94 NUEVO CANAL         \n",
+              "2       0         0         franco barroso              \n",
+              "3       0         0         Juan David Lobaton          \n",
+              "4       0         1         Joel Munguía                \n",
+              "5       0         0         Fernando Hernández          \n",
+              "6       0         0         DanysModz                   \n",
+              "7       0         1         xeneize nacional 1899       \n",
+              "8       0         0         BJ MM                       \n",
+              "9       0         0         PendexMaximo                \n",
+              "10      0         0         Abraham Escamilla Trejo     \n",
+              "11      0         0         Victor manuel Trejos ospina \n",
+              "12      0         0         Victor manuel Trejos ospina \n",
+              "13      0         0         Victor manuel Trejos ospina \n",
+              "14      0         0         Victor manuel Trejos ospina \n",
+              "15      0         0         Victor manuel Trejos ospina \n",
+              "16      0         0         hatake kakashi              \n",
+              "17      0         1         Muriel The Hedgehog         \n",
+              "18      0         0         Jesus Loud xD               \n",
+              "19      2         0         Optimus Gilberto            \n",
+              "20     NA         1         RG87                        \n",
+              "21     NA         1         TheMrRojo                   \n",
+              "22      0         3         Ivan                        \n",
+              "23      0         2         Ssj infinito                \n",
+              "24      1         0         Blackwolf7797               \n",
+              "25     NA         1         TheMrRojo                   \n",
+              "26      0         0         Rollshold                   \n",
+              "27      0         1         Ignacio Girón Jiménez       \n",
+              "28      0         0         Batstian El proo!!          \n",
+              "29      0         0         Danilo Galeano              \n",
+              "30      0         0         Lanzaguisante_Gamer         \n",
+              "⋮      ⋮          ⋮         ⋮                           \n",
+              "431600  0         0         Ux7 me.g                    \n",
+              "431601  0         1         The legend Tops and Games xd\n",
+              "431602  0         1         Ignacio Perotti robledo     \n",
+              "431603  0         0         guadalupe dornel            \n",
+              "431604  0         0         anonymous gamer             \n",
+              "431605  0         0         sofia jimenez               \n",
+              "431606  0         0         Karina Vamos Rincon Caro    \n",
+              "431607  0         0         auguschan 6                 \n",
+              "431608  0         0         Acm 0                       \n",
+              "431609  0         1         juega agustin 10            \n",
+              "431610  0         0         Pablo Castillo              \n",
+              "431611  0         0         Noelia Araujo               \n",
+              "431612  0         0         •mika°•°                    \n",
+              "431613  0         0         Maria emilia Moreno         \n",
+              "431614  0         0         Rakun Of Guar               \n",
+              "431615  0         0         °•kairi•°                   \n",
+              "431616  0         0         Jhonson Jimenez             \n",
+              "431617  0         0         \\\\\\\\ ITACHI \\\\\\\\            \n",
+              "431618  0         0         Pep Miralles Berenguer      \n",
+              "431619  0         0         el magma                    \n",
+              "431620  0         0         Daniel Lema                 \n",
+              "431621  0         0         Pep Miralles Berenguer      \n",
+              "431622  0         1         •Kispe SNT•                 \n",
+              "431623  0         0         Que                         \n",
+              "431624  0         0         QUIENSOHBO                  \n",
+              "431625  2         2         COCA COLA                   \n",
+              "431626 NA         1         COCA COLA                   \n",
+              "431627 NA         0         ¡ 笑 [ Cløud aff’s] !       \n",
+              "431628  0         0         aztez rockYT                \n",
+              "431629  0         1         Marcos Coloso               \n",
+              "       IDENTITY_ATTACK_EXPERIMENTAL SEVERE_TOXICITY dislikes_video likes_video\n",
+              "1      0.074238000                  0.038955480     187            17800      \n",
+              "2      0.112633556                  0.072106820     187            17800      \n",
+              "3      0.054531623                  0.119623110     187            17800      \n",
+              "4      0.021494410                  0.027136052     187            17800      \n",
+              "5      0.094217250                  0.038955480     187            17800      \n",
+              "6      0.166131900                  0.429123700     187            17800      \n",
+              "7      0.009226609                  0.012232397     187            17800      \n",
+              "8      0.120469086                  0.038955480     187            17800      \n",
+              "9      0.001084917                  0.002543265     187            17800      \n",
+              "10     0.025739571                  0.018766490     187            17800      \n",
+              "11     0.204462870                  0.320438620     187            17800      \n",
+              "12     0.265624100                  0.202463850     187            17800      \n",
+              "13     0.152086560                  0.049135607     187            17800      \n",
+              "14     0.060442220                  0.037038352     187            17800      \n",
+              "15     0.034712363                  0.017317241     187            17800      \n",
+              "16     0.051193107                  0.028691104     187            17800      \n",
+              "17     0.113417520                  0.281967220     187            17800      \n",
+              "18     0.127171590                  0.072106820     187            17800      \n",
+              "19     0.064463110                  0.072106820     187            17800      \n",
+              "20     0.175524730                  0.072106820     187            17800      \n",
+              "21     0.070063600                  0.072106820     187            17800      \n",
+              "22     0.005255030                  0.003994765     187            17800      \n",
+              "23     0.753528060                  0.420229400     187            17800      \n",
+              "24     0.197024800                  0.164414420     187            17800      \n",
+              "25     0.037146024                  0.011224411     187            17800      \n",
+              "26     0.018563686                  0.017679274     187            17800      \n",
+              "27     0.090194955                  0.072106820     187            17800      \n",
+              "28     0.357983770                  0.530632440     187            17800      \n",
+              "29     0.052295290                  0.044813935     187            17800      \n",
+              "30     0.008834558                  0.009930107     187            17800      \n",
+              "⋮      ⋮                            ⋮               ⋮              ⋮          \n",
+              "431600 0.13966072                   0.22675600      279            31096      \n",
+              "431601 0.38971007                   0.28196722      279            31096      \n",
+              "431602 0.31929135                   0.42022940      279            31096      \n",
+              "431603 0.05393293                   0.02496678      279            31096      \n",
+              "431604 0.33395293                   0.08454568      279            31096      \n",
+              "431605 0.31929135                   0.53063244      279            31096      \n",
+              "431606 0.01205349                   0.01229900      279            31096      \n",
+              "431607 0.07563151                   0.11040185      279            31096      \n",
+              "431608 0.08266538                   0.04143556      279            31096      \n",
+              "431609 0.09593718                   0.07210682      279            31096      \n",
+              "431610 0.61728394                   0.30593607      279            31096      \n",
+              "431611 0.27269745                   0.36701694      279            31096      \n",
+              "431612 0.31128025                   0.16441442      279            31096      \n",
+              "431613 0.06782010                   0.03133155      279            31096      \n",
+              "431614 0.12046909                   0.13112165      279            31096      \n",
+              "431615 0.38971007                   0.65721040      279            31096      \n",
+              "431616 0.07555257                   0.07210682      279            31096      \n",
+              "431617 0.27133740                   0.32946962      279            31096      \n",
+              "431618 0.03809290                   0.03358242      279            31096      \n",
+              "431619 0.17804669                   0.07210682      279            31096      \n",
+              "431620 0.12046909                   0.03895548      279            31096      \n",
+              "431621 0.04940150                   0.02987920      279            31096      \n",
+              "431622 0.01332888                   0.01798511      279            31096      \n",
+              "431623 0.07235029                   0.07210682      279            31096      \n",
+              "431624 0.01753717                   0.04060337      279            31096      \n",
+              "431625 0.38971007                   0.65721040      279            31096      \n",
+              "431626 0.02544575                   0.04557358      279            31096      \n",
+              "431627 0.06855745                   0.02427984      279            31096      \n",
+              "431628 0.09629715                   0.07210682      279            31096      \n",
+              "431629         NA                           NA       NA               NA      \n",
+              "       cantidad_comentarios toxicity    canal          \n",
+              "1      1919                 0.146869100 AleVera Oficial\n",
+              "2      1919                 0.088079050 AleVera Oficial\n",
+              "3      1919                 0.095092640 AleVera Oficial\n",
+              "4      1919                 0.046990495 AleVera Oficial\n",
+              "5      1919                 0.042356880 AleVera Oficial\n",
+              "6      1919                 0.623573600 AleVera Oficial\n",
+              "7      1919                 0.016033355 AleVera Oficial\n",
+              "8      1919                 0.032566514 AleVera Oficial\n",
+              "9      1919                 0.006230740 AleVera Oficial\n",
+              "10     1919                 0.024884904 AleVera Oficial\n",
+              "11     1919                 0.784940500 AleVera Oficial\n",
+              "12     1919                 0.577260100 AleVera Oficial\n",
+              "13     1919                 0.139843580 AleVera Oficial\n",
+              "14     1919                 0.046990495 AleVera Oficial\n",
+              "15     1919                 0.020197260 AleVera Oficial\n",
+              "16     1919                 0.028170383 AleVera Oficial\n",
+              "17     1919                 0.762518000 AleVera Oficial\n",
+              "18     1919                 0.191891630 AleVera Oficial\n",
+              "19     1919                 0.100274290 AleVera Oficial\n",
+              "20     1919                 0.249799490 AleVera Oficial\n",
+              "21     1919                 0.135210650 AleVera Oficial\n",
+              "22     1919                 0.007764014 AleVera Oficial\n",
+              "23     1919                 0.268748940 AleVera Oficial\n",
+              "24     1919                 0.249830650 AleVera Oficial\n",
+              "25     1919                 0.007764057 AleVera Oficial\n",
+              "26     1919                 0.042760790 AleVera Oficial\n",
+              "27     1919                 0.191891630 AleVera Oficial\n",
+              "28     1919                 0.562498900 AleVera Oficial\n",
+              "29     1919                 0.048343346 AleVera Oficial\n",
+              "30     1919                 0.018265212 AleVera Oficial\n",
+              "⋮      ⋮                    ⋮           ⋮              \n",
+              "431600 4258                 0.57726010  NICO VILLA     \n",
+              "431601 4258                 0.29729780  NICO VILLA     \n",
+              "431602 4258                 0.64898986  NICO VILLA     \n",
+              "431603 4258                 0.02224877  NICO VILLA     \n",
+              "431604 4258                 0.07829838  NICO VILLA     \n",
+              "431605 4258                 0.41716862  NICO VILLA     \n",
+              "431606 4258                 0.01542554  NICO VILLA     \n",
+              "431607 4258                 0.20039219  NICO VILLA     \n",
+              "431608 4258                 0.08861402  NICO VILLA     \n",
+              "431609 4258                 0.08883341  NICO VILLA     \n",
+              "431610 4258                 0.51454425  NICO VILLA     \n",
+              "431611 4258                 0.41328582  NICO VILLA     \n",
+              "431612 4258                 0.23076516  NICO VILLA     \n",
+              "431613 4258                 0.04514724  NICO VILLA     \n",
+              "431614 4258                 0.41721338  NICO VILLA     \n",
+              "431615 4258                 0.64408785  NICO VILLA     \n",
+              "431616 4258                 0.13800086  NICO VILLA     \n",
+              "431617 4258                 0.60767090  NICO VILLA     \n",
+              "431618 4258                 0.04282416  NICO VILLA     \n",
+              "431619 4258                 0.17166190  NICO VILLA     \n",
+              "431620 4258                 0.04699050  NICO VILLA     \n",
+              "431621 4258                 0.02276497  NICO VILLA     \n",
+              "431622 4258                 0.04927650  NICO VILLA     \n",
+              "431623 4258                 0.19189163  NICO VILLA     \n",
+              "431624 4258                 0.03203740  NICO VILLA     \n",
+              "431625 4258                 0.78449900  NICO VILLA     \n",
+              "431626 4258                 0.05912663  NICO VILLA     \n",
+              "431627 4258                 0.06139182  NICO VILLA     \n",
+              "431628 4258                 0.06594063  NICO VILLA     \n",
+              "431629   NA                         NA  NIC            "
+            ]
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# prompt: Fill NA with zero in ReplyCount\n",
+        "\n",
+        "df$replyCount[is.na(df$replyCount)] <- 0\n"
+      ],
+      "metadata": {
+        "id": "4kmFwEEdZKbk"
+      },
+      "execution_count": 3,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "sapply(df, function(x) sum(is.na(x)))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 52
+        },
+        "id": "WGF5btt66ubo",
+        "outputId": "56b229d2-602a-4670-f5cc-65c0210b2037"
+      },
+      "execution_count": 4,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/html": [
+              "<style>\n",
+              ".dl-inline {width: auto; margin:0; padding: 0}\n",
+              ".dl-inline>dt, .dl-inline>dd {float: none; width: auto; display: inline-block}\n",
+              ".dl-inline>dt::after {content: \":\\0020\"; padding-right: .5ex}\n",
+              ".dl-inline>dt:not(:first-of-type) {padding-left: .5ex}\n",
+              "</style><dl class=dl-inline><dt>replyCount</dt><dd>0</dd><dt>likeCount</dt><dd>0</dd><dt>authorName</dt><dd>0</dd><dt>videoId</dt><dd>0</dd><dt>canal</dt><dd>0</dd><dt>vistas_video</dt><dd>1</dd><dt>likes_video</dt><dd>1</dd><dt>dislikes_video</dt><dd>1</dd><dt>cantidad_comentarios</dt><dd>1</dd><dt>youtube_id</dt><dd>0</dd><dt>toxicity</dt><dd>1</dd><dt>THREAT_EXPERIMENTAL</dt><dd>1</dd><dt>IDENTITY_ATTACK_EXPERIMENTAL</dt><dd>1</dd><dt>INSULT_EXPERIMENTAL</dt><dd>1</dd><dt>PROFANITY_EXPERIMENTAL</dt><dd>1</dd><dt>SEVERE_TOXICITY</dt><dd>1</dd></dl>\n"
+            ],
+            "text/markdown": "replyCount\n:   0likeCount\n:   0authorName\n:   0videoId\n:   0canal\n:   0vistas_video\n:   1likes_video\n:   1dislikes_video\n:   1cantidad_comentarios\n:   1youtube_id\n:   0toxicity\n:   1THREAT_EXPERIMENTAL\n:   1IDENTITY_ATTACK_EXPERIMENTAL\n:   1INSULT_EXPERIMENTAL\n:   1PROFANITY_EXPERIMENTAL\n:   1SEVERE_TOXICITY\n:   1\n\n",
+            "text/latex": "\\begin{description*}\n\\item[replyCount] 0\n\\item[likeCount] 0\n\\item[authorName] 0\n\\item[videoId] 0\n\\item[canal] 0\n\\item[vistas\\textbackslash{}\\_video] 1\n\\item[likes\\textbackslash{}\\_video] 1\n\\item[dislikes\\textbackslash{}\\_video] 1\n\\item[cantidad\\textbackslash{}\\_comentarios] 1\n\\item[youtube\\textbackslash{}\\_id] 0\n\\item[toxicity] 1\n\\item[THREAT\\textbackslash{}\\_EXPERIMENTAL] 1\n\\item[IDENTITY\\textbackslash{}\\_ATTACK\\textbackslash{}\\_EXPERIMENTAL] 1\n\\item[INSULT\\textbackslash{}\\_EXPERIMENTAL] 1\n\\item[PROFANITY\\textbackslash{}\\_EXPERIMENTAL] 1\n\\item[SEVERE\\textbackslash{}\\_TOXICITY] 1\n\\end{description*}\n",
+            "text/plain": [
+              "                  replyCount                    likeCount \n",
+              "                           0                            0 \n",
+              "                  authorName                      videoId \n",
+              "                           0                            0 \n",
+              "                       canal                 vistas_video \n",
+              "                           0                            1 \n",
+              "                 likes_video               dislikes_video \n",
+              "                           1                            1 \n",
+              "        cantidad_comentarios                   youtube_id \n",
+              "                           1                            0 \n",
+              "                    toxicity          THREAT_EXPERIMENTAL \n",
+              "                           1                            1 \n",
+              "IDENTITY_ATTACK_EXPERIMENTAL          INSULT_EXPERIMENTAL \n",
+              "                           1                            1 \n",
+              "      PROFANITY_EXPERIMENTAL              SEVERE_TOXICITY \n",
+              "                           1                            1 "
+            ]
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "toxicity_fields <- c(\n",
+        "    \"toxicity\",\n",
+        "    \"THREAT_EXPERIMENTAL\",\n",
+        "    \"IDENTITY_ATTACK_EXPERIMENTAL\",\n",
+        "    \"INSULT_EXPERIMENTAL\",\n",
+        "    \"PROFANITY_EXPERIMENTAL\",\n",
+        "    \"SEVERE_TOXICITY\"\n",
+        ")\n",
+        "\n",
+        "sum_fields <- c(\n",
+        "    \"replyCount\",\n",
+        "    \"likeCount\"\n",
+        ")\n",
+        "\n",
+        "first_fields <- c(\n",
+        "    'likes_video', 'vistas_video', 'cantidad_comentarios', 'canal'\n",
+        ")\n",
+        "\n",
+        "engagement_fields <- c(\n",
+        "    'replyCount', 'likeCount', 'likes_video', 'vistas_video', 'cantidad_comentarios'\n",
+        ")\n",
+        "\n",
+        "threshold = 0.8\n",
+        "\n",
+        "for (field in toxicity_fields) {\n",
+        "  df[field] <- df[field] > threshold\n",
+        "}\n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "3RkiMWQvMwly"
+      },
+      "execution_count": 5,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# prompt: group by video id, calculate the mean for each toxicity field, sum for sum fields and take the first for first_fields. If you use %>%, please define it or import it\n",
+        "\n",
+        "library(dplyr)\n",
+        "df_agg <- df %>%\n",
+        "  group_by(videoId) %>%\n",
+        "  summarise(across(toxicity_fields, mean),\n",
+        "            across(sum_fields, sum),\n",
+        "            across(first_fields, first))\n",
+        "\n",
+        "dim(df_agg)\n",
+        "\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 538
+        },
+        "id": "ckMgwd3nNOXF",
+        "outputId": "fd8ada74-050e-4cb8-8ade-659dedc5a3a1"
+      },
+      "execution_count": 6,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "\n",
+            "Attaching package: ‘dplyr’\n",
+            "\n",
+            "\n",
+            "The following objects are masked from ‘package:stats’:\n",
+            "\n",
+            "    filter, lag\n",
+            "\n",
+            "\n",
+            "The following objects are masked from ‘package:base’:\n",
+            "\n",
+            "    intersect, setdiff, setequal, union\n",
+            "\n",
+            "\n",
+            "Warning message:\n",
+            "“\u001b[1m\u001b[22mThere were 3 warnings in `summarise()`.\n",
+            "The first warning was:\n",
+            "\u001b[1m\u001b[22m\u001b[36mℹ\u001b[39m In argument: `across(toxicity_fields, mean)`.\n",
+            "Caused by warning:\n",
+            "\u001b[1m\u001b[22m\u001b[33m!\u001b[39m Using an external vector in selections was deprecated in tidyselect 1.1.0.\n",
+            "\u001b[36mℹ\u001b[39m Please use `all_of()` or `any_of()` instead.\n",
+            "  # Was:\n",
+            "  data %>% select(toxicity_fields)\n",
+            "\n",
+            "  # Now:\n",
+            "  data %>% select(all_of(toxicity_fields))\n",
+            "\n",
+            "See <https://tidyselect.r-lib.org/reference/faq-external-vector.html>.\n",
+            "\u001b[1m\u001b[22m\u001b[36mℹ\u001b[39m Run `dplyr::last_dplyr_warnings()` to see the 2 remaining warnings.”\n"
+          ]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/html": [
+              "<style>\n",
+              ".list-inline {list-style: none; margin:0; padding: 0}\n",
+              ".list-inline>li {display: inline-block}\n",
+              ".list-inline>li:not(:last-child)::after {content: \"\\00b7\"; padding: 0 .5ex}\n",
+              "</style>\n",
+              "<ol class=list-inline><li>308</li><li>13</li></ol>\n"
+            ],
+            "text/markdown": "1. 308\n2. 13\n\n\n",
+            "text/latex": "\\begin{enumerate*}\n\\item 308\n\\item 13\n\\end{enumerate*}\n",
+            "text/plain": [
+              "[1] 308  13"
+            ]
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# prompt: Convert the author column to a numeric column, creating a mapping for each number to their respective value\n",
+        "\n",
+        "mapping <- unique(df_agg$canal)\n",
+        "df_agg$canal <- as.numeric(factor(df_agg$canal, levels = mapping))\n",
+        "\n",
+        "df_agg$canal"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 86
+        },
+        "id": "IvVEUr-FWMCv",
+        "outputId": "3e8bdfed-0d7e-439d-e2ce-28a0cf57485e"
+      },
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/html": [
+              "<style>\n",
+              ".list-inline {list-style: none; margin:0; padding: 0}\n",
+              ".list-inline>li {display: inline-block}\n",
+              ".list-inline>li:not(:last-child)::after {content: \"\\00b7\"; padding: 0 .5ex}\n",
+              "</style>\n",
+              "<ol class=list-inline><li>1</li><li>2</li><li>3</li><li>4</li><li>3</li><li>1</li><li>1</li><li>2</li><li>4</li><li>1</li><li>3</li><li>2</li><li>3</li><li>3</li><li>3</li><li>5</li><li>1</li><li>1</li><li>6</li><li>3</li><li>1</li><li>1</li><li>1</li><li>1</li><li>1</li><li>1</li><li>1</li><li>5</li><li>5</li><li>2</li><li>5</li><li>1</li><li>5</li><li>1</li><li>3</li><li>3</li><li>2</li><li>2</li><li>1</li><li>1</li><li>2</li><li>3</li><li>5</li><li>3</li><li>5</li><li>1</li><li>3</li><li>4</li><li>2</li><li>3</li><li>2</li><li>1</li><li>1</li><li>3</li><li>4</li><li>3</li><li>1</li><li>1</li><li>1</li><li>2</li><li>5</li><li>7</li><li>4</li><li>5</li><li>3</li><li>3</li><li>2</li><li>3</li><li>3</li><li>2</li><li>2</li><li>3</li><li>1</li><li>2</li><li>3</li><li>1</li><li>1</li><li>5</li><li>1</li><li>7</li><li>1</li><li>3</li><li>3</li><li>2</li><li>1</li><li>5</li><li>2</li><li>1</li><li>1</li><li>3</li><li>5</li><li>1</li><li>1</li><li>2</li><li>2</li><li>3</li><li>5</li><li>3</li><li>1</li><li>3</li><li>1</li><li>1</li><li>1</li><li>1</li><li>3</li><li>6</li><li>3</li><li>1</li><li>2</li><li>5</li><li>5</li><li>1</li><li>1</li><li>1</li><li>2</li><li>7</li><li>7</li><li>5</li><li>1</li><li>4</li><li>1</li><li>3</li><li>3</li><li>2</li><li>1</li><li>4</li><li>1</li><li>1</li><li>1</li><li>5</li><li>5</li><li>6</li><li>6</li><li>7</li><li>3</li><li>3</li><li>2</li><li>3</li><li>5</li><li>3</li><li>3</li><li>4</li><li>2</li><li>3</li><li>5</li><li>5</li><li>5</li><li>6</li><li>2</li><li>4</li><li>3</li><li>2</li><li>3</li><li>5</li><li>5</li><li>3</li><li>3</li><li>2</li><li>3</li><li>5</li><li>2</li><li>3</li><li>2</li><li>7</li><li>3</li><li>4</li><li>6</li><li>4</li><li>3</li><li>3</li><li>6</li><li>3</li><li>3</li><li>4</li><li>7</li><li>2</li><li>3</li><li>5</li><li>3</li><li>4</li><li>7</li><li>5</li><li>1</li><li>2</li><li>4</li><li>1</li><li>2</li><li>5</li><li>3</li><li>3</li><li>4</li><li>3</li><li>3</li><li>3</li><li>5</li><li>3</li><li>2</li><li>1</li><li>4</li><li>4</li><li>5</li><li>1</li><li>5</li><li>1</li><li>3</li><li>1</li><li>3</li><li>4</li><li>3</li><li>2</li><li>1</li><li>1</li><li>5</li><li>1</li><li>1</li><li>2</li><li>1</li><li>3</li><li>1</li><li>2</li><li>2</li><li>5</li><li>6</li><li>5</li><li>6</li><li>2</li><li>3</li><li>1</li><li>2</li><li>3</li><li>1</li><li>5</li><li>5</li><li>5</li><li>7</li><li>3</li><li>1</li><li>5</li><li>3</li><li>5</li><li>3</li><li>5</li><li>3</li><li>3</li><li>3</li><li>3</li><li>5</li><li>7</li><li>5</li><li>1</li><li>1</li><li>3</li><li>7</li><li>1</li><li>1</li><li>2</li><li>1</li><li>5</li><li>2</li><li>1</li><li>3</li><li>3</li><li>3</li><li>3</li><li>1</li><li>3</li><li>4</li><li>1</li><li>2</li><li>2</li><li>2</li><li>5</li><li>2</li><li>2</li><li>4</li><li>3</li><li>3</li><li>3</li><li>5</li><li>2</li><li>3</li><li>3</li><li>7</li><li>5</li><li>4</li><li>3</li><li>2</li><li>2</li><li>3</li><li>4</li><li>3</li><li>2</li><li>5</li><li>3</li><li>2</li><li>2</li><li>4</li><li>3</li><li>2</li><li>5</li><li>2</li><li>5</li><li>4</li><li>4</li><li>2</li><li>5</li><li>4</li><li>4</li></ol>\n"
+            ],
+            "text/markdown": "1. 1\n2. 2\n3. 3\n4. 4\n5. 3\n6. 1\n7. 1\n8. 2\n9. 4\n10. 1\n11. 3\n12. 2\n13. 3\n14. 3\n15. 3\n16. 5\n17. 1\n18. 1\n19. 6\n20. 3\n21. 1\n22. 1\n23. 1\n24. 1\n25. 1\n26. 1\n27. 1\n28. 5\n29. 5\n30. 2\n31. 5\n32. 1\n33. 5\n34. 1\n35. 3\n36. 3\n37. 2\n38. 2\n39. 1\n40. 1\n41. 2\n42. 3\n43. 5\n44. 3\n45. 5\n46. 1\n47. 3\n48. 4\n49. 2\n50. 3\n51. 2\n52. 1\n53. 1\n54. 3\n55. 4\n56. 3\n57. 1\n58. 1\n59. 1\n60. 2\n61. 5\n62. 7\n63. 4\n64. 5\n65. 3\n66. 3\n67. 2\n68. 3\n69. 3\n70. 2\n71. 2\n72. 3\n73. 1\n74. 2\n75. 3\n76. 1\n77. 1\n78. 5\n79. 1\n80. 7\n81. 1\n82. 3\n83. 3\n84. 2\n85. 1\n86. 5\n87. 2\n88. 1\n89. 1\n90. 3\n91. 5\n92. 1\n93. 1\n94. 2\n95. 2\n96. 3\n97. 5\n98. 3\n99. 1\n100. 3\n101. 1\n102. 1\n103. 1\n104. 1\n105. 3\n106. 6\n107. 3\n108. 1\n109. 2\n110. 5\n111. 5\n112. 1\n113. 1\n114. 1\n115. 2\n116. 7\n117. 7\n118. 5\n119. 1\n120. 4\n121. 1\n122. 3\n123. 3\n124. 2\n125. 1\n126. 4\n127. 1\n128. 1\n129. 1\n130. 5\n131. 5\n132. 6\n133. 6\n134. 7\n135. 3\n136. 3\n137. 2\n138. 3\n139. 5\n140. 3\n141. 3\n142. 4\n143. 2\n144. 3\n145. 5\n146. 5\n147. 5\n148. 6\n149. 2\n150. 4\n151. 3\n152. 2\n153. 3\n154. 5\n155. 5\n156. 3\n157. 3\n158. 2\n159. 3\n160. 5\n161. 2\n162. 3\n163. 2\n164. 7\n165. 3\n166. 4\n167. 6\n168. 4\n169. 3\n170. 3\n171. 6\n172. 3\n173. 3\n174. 4\n175. 7\n176. 2\n177. 3\n178. 5\n179. 3\n180. 4\n181. 7\n182. 5\n183. 1\n184. 2\n185. 4\n186. 1\n187. 2\n188. 5\n189. 3\n190. 3\n191. 4\n192. 3\n193. 3\n194. 3\n195. 5\n196. 3\n197. 2\n198. 1\n199. 4\n200. 4\n201. 5\n202. 1\n203. 5\n204. 1\n205. 3\n206. 1\n207. 3\n208. 4\n209. 3\n210. 2\n211. 1\n212. 1\n213. 5\n214. 1\n215. 1\n216. 2\n217. 1\n218. 3\n219. 1\n220. 2\n221. 2\n222. 5\n223. 6\n224. 5\n225. 6\n226. 2\n227. 3\n228. 1\n229. 2\n230. 3\n231. 1\n232. 5\n233. 5\n234. 5\n235. 7\n236. 3\n237. 1\n238. 5\n239. 3\n240. 5\n241. 3\n242. 5\n243. 3\n244. 3\n245. 3\n246. 3\n247. 5\n248. 7\n249. 5\n250. 1\n251. 1\n252. 3\n253. 7\n254. 1\n255. 1\n256. 2\n257. 1\n258. 5\n259. 2\n260. 1\n261. 3\n262. 3\n263. 3\n264. 3\n265. 1\n266. 3\n267. 4\n268. 1\n269. 2\n270. 2\n271. 2\n272. 5\n273. 2\n274. 2\n275. 4\n276. 3\n277. 3\n278. 3\n279. 5\n280. 2\n281. 3\n282. 3\n283. 7\n284. 5\n285. 4\n286. 3\n287. 2\n288. 2\n289. 3\n290. 4\n291. 3\n292. 2\n293. 5\n294. 3\n295. 2\n296. 2\n297. 4\n298. 3\n299. 2\n300. 5\n301. 2\n302. 5\n303. 4\n304. 4\n305. 2\n306. 5\n307. 4\n308. 4\n\n\n",
+            "text/latex": "\\begin{enumerate*}\n\\item 1\n\\item 2\n\\item 3\n\\item 4\n\\item 3\n\\item 1\n\\item 1\n\\item 2\n\\item 4\n\\item 1\n\\item 3\n\\item 2\n\\item 3\n\\item 3\n\\item 3\n\\item 5\n\\item 1\n\\item 1\n\\item 6\n\\item 3\n\\item 1\n\\item 1\n\\item 1\n\\item 1\n\\item 1\n\\item 1\n\\item 1\n\\item 5\n\\item 5\n\\item 2\n\\item 5\n\\item 1\n\\item 5\n\\item 1\n\\item 3\n\\item 3\n\\item 2\n\\item 2\n\\item 1\n\\item 1\n\\item 2\n\\item 3\n\\item 5\n\\item 3\n\\item 5\n\\item 1\n\\item 3\n\\item 4\n\\item 2\n\\item 3\n\\item 2\n\\item 1\n\\item 1\n\\item 3\n\\item 4\n\\item 3\n\\item 1\n\\item 1\n\\item 1\n\\item 2\n\\item 5\n\\item 7\n\\item 4\n\\item 5\n\\item 3\n\\item 3\n\\item 2\n\\item 3\n\\item 3\n\\item 2\n\\item 2\n\\item 3\n\\item 1\n\\item 2\n\\item 3\n\\item 1\n\\item 1\n\\item 5\n\\item 1\n\\item 7\n\\item 1\n\\item 3\n\\item 3\n\\item 2\n\\item 1\n\\item 5\n\\item 2\n\\item 1\n\\item 1\n\\item 3\n\\item 5\n\\item 1\n\\item 1\n\\item 2\n\\item 2\n\\item 3\n\\item 5\n\\item 3\n\\item 1\n\\item 3\n\\item 1\n\\item 1\n\\item 1\n\\item 1\n\\item 3\n\\item 6\n\\item 3\n\\item 1\n\\item 2\n\\item 5\n\\item 5\n\\item 1\n\\item 1\n\\item 1\n\\item 2\n\\item 7\n\\item 7\n\\item 5\n\\item 1\n\\item 4\n\\item 1\n\\item 3\n\\item 3\n\\item 2\n\\item 1\n\\item 4\n\\item 1\n\\item 1\n\\item 1\n\\item 5\n\\item 5\n\\item 6\n\\item 6\n\\item 7\n\\item 3\n\\item 3\n\\item 2\n\\item 3\n\\item 5\n\\item 3\n\\item 3\n\\item 4\n\\item 2\n\\item 3\n\\item 5\n\\item 5\n\\item 5\n\\item 6\n\\item 2\n\\item 4\n\\item 3\n\\item 2\n\\item 3\n\\item 5\n\\item 5\n\\item 3\n\\item 3\n\\item 2\n\\item 3\n\\item 5\n\\item 2\n\\item 3\n\\item 2\n\\item 7\n\\item 3\n\\item 4\n\\item 6\n\\item 4\n\\item 3\n\\item 3\n\\item 6\n\\item 3\n\\item 3\n\\item 4\n\\item 7\n\\item 2\n\\item 3\n\\item 5\n\\item 3\n\\item 4\n\\item 7\n\\item 5\n\\item 1\n\\item 2\n\\item 4\n\\item 1\n\\item 2\n\\item 5\n\\item 3\n\\item 3\n\\item 4\n\\item 3\n\\item 3\n\\item 3\n\\item 5\n\\item 3\n\\item 2\n\\item 1\n\\item 4\n\\item 4\n\\item 5\n\\item 1\n\\item 5\n\\item 1\n\\item 3\n\\item 1\n\\item 3\n\\item 4\n\\item 3\n\\item 2\n\\item 1\n\\item 1\n\\item 5\n\\item 1\n\\item 1\n\\item 2\n\\item 1\n\\item 3\n\\item 1\n\\item 2\n\\item 2\n\\item 5\n\\item 6\n\\item 5\n\\item 6\n\\item 2\n\\item 3\n\\item 1\n\\item 2\n\\item 3\n\\item 1\n\\item 5\n\\item 5\n\\item 5\n\\item 7\n\\item 3\n\\item 1\n\\item 5\n\\item 3\n\\item 5\n\\item 3\n\\item 5\n\\item 3\n\\item 3\n\\item 3\n\\item 3\n\\item 5\n\\item 7\n\\item 5\n\\item 1\n\\item 1\n\\item 3\n\\item 7\n\\item 1\n\\item 1\n\\item 2\n\\item 1\n\\item 5\n\\item 2\n\\item 1\n\\item 3\n\\item 3\n\\item 3\n\\item 3\n\\item 1\n\\item 3\n\\item 4\n\\item 1\n\\item 2\n\\item 2\n\\item 2\n\\item 5\n\\item 2\n\\item 2\n\\item 4\n\\item 3\n\\item 3\n\\item 3\n\\item 5\n\\item 2\n\\item 3\n\\item 3\n\\item 7\n\\item 5\n\\item 4\n\\item 3\n\\item 2\n\\item 2\n\\item 3\n\\item 4\n\\item 3\n\\item 2\n\\item 5\n\\item 3\n\\item 2\n\\item 2\n\\item 4\n\\item 3\n\\item 2\n\\item 5\n\\item 2\n\\item 5\n\\item 4\n\\item 4\n\\item 2\n\\item 5\n\\item 4\n\\item 4\n\\end{enumerate*}\n",
+            "text/plain": [
+              "  [1] 1 2 3 4 3 1 1 2 4 1 3 2 3 3 3 5 1 1 6 3 1 1 1 1 1 1 1 5 5 2 5 1 5 1 3 3 2\n",
+              " [38] 2 1 1 2 3 5 3 5 1 3 4 2 3 2 1 1 3 4 3 1 1 1 2 5 7 4 5 3 3 2 3 3 2 2 3 1 2\n",
+              " [75] 3 1 1 5 1 7 1 3 3 2 1 5 2 1 1 3 5 1 1 2 2 3 5 3 1 3 1 1 1 1 3 6 3 1 2 5 5\n",
+              "[112] 1 1 1 2 7 7 5 1 4 1 3 3 2 1 4 1 1 1 5 5 6 6 7 3 3 2 3 5 3 3 4 2 3 5 5 5 6\n",
+              "[149] 2 4 3 2 3 5 5 3 3 2 3 5 2 3 2 7 3 4 6 4 3 3 6 3 3 4 7 2 3 5 3 4 7 5 1 2 4\n",
+              "[186] 1 2 5 3 3 4 3 3 3 5 3 2 1 4 4 5 1 5 1 3 1 3 4 3 2 1 1 5 1 1 2 1 3 1 2 2 5\n",
+              "[223] 6 5 6 2 3 1 2 3 1 5 5 5 7 3 1 5 3 5 3 5 3 3 3 3 5 7 5 1 1 3 7 1 1 2 1 5 2\n",
+              "[260] 1 3 3 3 3 1 3 4 1 2 2 2 5 2 2 4 3 3 3 5 2 3 3 7 5 4 3 2 2 3 4 3 2 5 3 2 2\n",
+              "[297] 4 3 2 5 2 5 4 4 2 5 4 4"
+            ]
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# prompt: count na in df_agg\n",
+        "\n",
+        "sapply(df_agg, function(x) sum(is.na(x)))\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 52
+        },
+        "id": "IgWbFIS4ZfCl",
+        "outputId": "f25e4a3c-2da0-4b6c-b4bc-6b1c5dba1733"
+      },
+      "execution_count": 8,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/html": [
+              "<style>\n",
+              ".dl-inline {width: auto; margin:0; padding: 0}\n",
+              ".dl-inline>dt, .dl-inline>dd {float: none; width: auto; display: inline-block}\n",
+              ".dl-inline>dt::after {content: \":\\0020\"; padding-right: .5ex}\n",
+              ".dl-inline>dt:not(:first-of-type) {padding-left: .5ex}\n",
+              "</style><dl class=dl-inline><dt>videoId</dt><dd>0</dd><dt>toxicity</dt><dd>1</dd><dt>THREAT_EXPERIMENTAL</dt><dd>1</dd><dt>IDENTITY_ATTACK_EXPERIMENTAL</dt><dd>1</dd><dt>INSULT_EXPERIMENTAL</dt><dd>1</dd><dt>PROFANITY_EXPERIMENTAL</dt><dd>1</dd><dt>SEVERE_TOXICITY</dt><dd>1</dd><dt>replyCount</dt><dd>0</dd><dt>likeCount</dt><dd>0</dd><dt>likes_video</dt><dd>0</dd><dt>vistas_video</dt><dd>0</dd><dt>cantidad_comentarios</dt><dd>0</dd><dt>canal</dt><dd>0</dd></dl>\n"
+            ],
+            "text/markdown": "videoId\n:   0toxicity\n:   1THREAT_EXPERIMENTAL\n:   1IDENTITY_ATTACK_EXPERIMENTAL\n:   1INSULT_EXPERIMENTAL\n:   1PROFANITY_EXPERIMENTAL\n:   1SEVERE_TOXICITY\n:   1replyCount\n:   0likeCount\n:   0likes_video\n:   0vistas_video\n:   0cantidad_comentarios\n:   0canal\n:   0\n\n",
+            "text/latex": "\\begin{description*}\n\\item[videoId] 0\n\\item[toxicity] 1\n\\item[THREAT\\textbackslash{}\\_EXPERIMENTAL] 1\n\\item[IDENTITY\\textbackslash{}\\_ATTACK\\textbackslash{}\\_EXPERIMENTAL] 1\n\\item[INSULT\\textbackslash{}\\_EXPERIMENTAL] 1\n\\item[PROFANITY\\textbackslash{}\\_EXPERIMENTAL] 1\n\\item[SEVERE\\textbackslash{}\\_TOXICITY] 1\n\\item[replyCount] 0\n\\item[likeCount] 0\n\\item[likes\\textbackslash{}\\_video] 0\n\\item[vistas\\textbackslash{}\\_video] 0\n\\item[cantidad\\textbackslash{}\\_comentarios] 0\n\\item[canal] 0\n\\end{description*}\n",
+            "text/plain": [
+              "                     videoId                     toxicity \n",
+              "                           0                            1 \n",
+              "         THREAT_EXPERIMENTAL IDENTITY_ATTACK_EXPERIMENTAL \n",
+              "                           1                            1 \n",
+              "         INSULT_EXPERIMENTAL       PROFANITY_EXPERIMENTAL \n",
+              "                           1                            1 \n",
+              "             SEVERE_TOXICITY                   replyCount \n",
+              "                           1                            0 \n",
+              "                   likeCount                  likes_video \n",
+              "                           0                            0 \n",
+              "                vistas_video         cantidad_comentarios \n",
+              "                           0                            0 \n",
+              "                       canal \n",
+              "                           0 "
+            ]
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# prompt: I want to perform a Poisson fixed effects regression. Each engagement field should be the dependent variable. The Xs are the toxicity_fields. Each subject is each different author\n",
+        "\n",
+        "library(lme4)\n",
+        "\n",
+        "# Loop through each engagement field\n",
+        "\n",
+        "for (field in engagement_fields) {\n",
+        "  # Fit a Poisson fixed effects regression\n",
+        "  formula <- as.formula(paste(field, \"~ SEVERE_TOXICITY + (1|canal)\"))\n",
+        "  model <- glmer(formula, family = poisson, data = df_agg)\n",
+        "\n",
+        "  # Print the model summary\n",
+        "  print(summary(model))\n",
+        "  print(\"====================\")\n",
+        "}"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "St9zQCJvSqmk",
+        "outputId": "f580a8da-720c-45d0-fb0a-d1ffe5566c8d"
+      },
+      "execution_count": 14,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Generalized linear mixed model fit by maximum likelihood (Laplace\n",
+            "  Approximation) [glmerMod]\n",
+            " Family: poisson  ( log )\n",
+            "Formula: replyCount ~ SEVERE_TOXICITY + (1 | canal)\n",
+            "   Data: df_agg\n",
+            "\n",
+            "     AIC      BIC   logLik deviance df.resid \n",
+            " 62923.1  62934.3 -31458.6  62917.1      304 \n",
+            "\n",
+            "Scaled residuals: \n",
+            "    Min      1Q  Median      3Q     Max \n",
+            "-27.353  -8.965  -3.985   3.588 145.551 \n",
+            "\n",
+            "Random effects:\n",
+            " Groups Name        Variance Std.Dev.\n",
+            " canal  (Intercept) 0.3485   0.5903  \n",
+            "Number of obs: 307, groups:  canal, 7\n",
+            "\n",
+            "Fixed effects:\n",
+            "                Estimate Std. Error z value Pr(>|z|)    \n",
+            "(Intercept)       5.5602     0.2232   24.91   <2e-16 ***\n",
+            "SEVERE_TOXICITY  15.5100     0.2318   66.90   <2e-16 ***\n",
+            "---\n",
+            "Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1\n",
+            "\n",
+            "Correlation of Fixed Effects:\n",
+            "            (Intr)\n",
+            "SEVERE_TOXI -0.019\n",
+            "[1] \"====================\"\n",
+            "Generalized linear mixed model fit by maximum likelihood (Laplace\n",
+            "  Approximation) [glmerMod]\n",
+            " Family: poisson  ( log )\n",
+            "Formula: likeCount ~ SEVERE_TOXICITY + (1 | canal)\n",
+            "   Data: df_agg\n",
+            "\n",
+            "     AIC      BIC   logLik deviance df.resid \n",
+            " 1743658  1743669  -871826  1743652      304 \n",
+            "\n",
+            "Scaled residuals: \n",
+            "    Min      1Q  Median      3Q     Max \n",
+            "-170.42  -51.84  -20.51   21.91  337.55 \n",
+            "\n",
+            "Random effects:\n",
+            " Groups Name        Variance Std.Dev.\n",
+            " canal  (Intercept) 0.2724   0.5219  \n",
+            "Number of obs: 307, groups:  canal, 7\n",
+            "\n",
+            "Fixed effects:\n",
+            "                Estimate Std. Error z value Pr(>|z|)    \n",
+            "(Intercept)      8.81124    0.19743   44.63   <2e-16 ***\n",
+            "SEVERE_TOXICITY 15.10226    0.04029  374.83   <2e-16 ***\n",
+            "---\n",
+            "Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1\n",
+            "\n",
+            "Correlation of Fixed Effects:\n",
+            "            (Intr)\n",
+            "SEVERE_TOXI -0.004\n",
+            "[1] \"====================\"\n",
+            "Generalized linear mixed model fit by maximum likelihood (Laplace\n",
+            "  Approximation) [glmerMod]\n",
+            " Family: poisson  ( log )\n",
+            "Formula: likes_video ~ SEVERE_TOXICITY + (1 | canal)\n",
+            "   Data: df_agg\n",
+            "\n",
+            "     AIC      BIC   logLik deviance df.resid \n",
+            " 5547259  5547270 -2773626  5547253      304 \n",
+            "\n",
+            "Scaled residuals: \n",
+            "    Min      1Q  Median      3Q     Max \n",
+            "-228.31  -81.07  -27.66   44.60 1966.33 \n",
+            "\n",
+            "Random effects:\n",
+            " Groups Name        Variance Std.Dev.\n",
+            " canal  (Intercept) 0.1975   0.4444  \n",
+            "Number of obs: 307, groups:  canal, 7\n",
+            "\n",
+            "Fixed effects:\n",
+            "                Estimate Std. Error z value Pr(>|z|)    \n",
+            "(Intercept)     10.28077    0.16747   61.39   <2e-16 ***\n",
+            "SEVERE_TOXICITY  8.00627    0.02386  335.58   <2e-16 ***\n",
+            "---\n",
+            "Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1\n",
+            "\n",
+            "Correlation of Fixed Effects:\n",
+            "            (Intr)\n",
+            "SEVERE_TOXI -0.003\n",
+            "[1] \"====================\"\n",
+            "Generalized linear mixed model fit by maximum likelihood (Laplace\n",
+            "  Approximation) [glmerMod]\n",
+            " Family: poisson  ( log )\n",
+            "Formula: vistas_video ~ SEVERE_TOXICITY + (1 | canal)\n",
+            "   Data: df_agg\n",
+            "\n",
+            "      AIC       BIC    logLik  deviance  df.resid \n",
+            "103178764 103178776 -51589379 103178758       304 \n",
+            "\n",
+            "Scaled residuals: \n",
+            "    Min      1Q  Median      3Q     Max \n",
+            " -841.0  -359.0  -132.9   165.3 11283.5 \n",
+            "\n",
+            "Random effects:\n",
+            " Groups Name        Variance Std.Dev.\n",
+            " canal  (Intercept) 0.2336   0.4833  \n",
+            "Number of obs: 307, groups:  canal, 7\n",
+            "\n",
+            "Fixed effects:\n",
+            "                 Estimate Std. Error z value Pr(>|z|)    \n",
+            "(Intercept)     12.795236   0.169051   75.69   <2e-16 ***\n",
+            "SEVERE_TOXICITY  9.785432   0.006676 1465.66   <2e-16 ***\n",
+            "---\n",
+            "Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1\n",
+            "\n",
+            "Correlation of Fixed Effects:\n",
+            "            (Intr)\n",
+            "SEVERE_TOXI -0.001\n",
+            "[1] \"====================\"\n",
+            "Generalized linear mixed model fit by maximum likelihood (Laplace\n",
+            "  Approximation) [glmerMod]\n",
+            " Family: poisson  ( log )\n",
+            "Formula: cantidad_comentarios ~ SEVERE_TOXICITY + (1 | canal)\n",
+            "   Data: df_agg\n",
+            "\n",
+            "      AIC       BIC    logLik  deviance  df.resid \n",
+            " 306131.9  306143.1 -153063.0  306125.9       304 \n",
+            "\n",
+            "Scaled residuals: \n",
+            "   Min     1Q Median     3Q    Max \n",
+            "-37.98 -17.39  -9.16   3.15 561.09 \n",
+            "\n",
+            "Random effects:\n",
+            " Groups Name        Variance Std.Dev.\n",
+            " canal  (Intercept) 0.2804   0.5295  \n",
+            "Number of obs: 307, groups:  canal, 7\n",
+            "\n",
+            "Fixed effects:\n",
+            "                Estimate Std. Error z value Pr(>|z|)    \n",
+            "(Intercept)       7.2978     0.2001   36.47   <2e-16 ***\n",
+            "SEVERE_TOXICITY   8.6063     0.1165   73.85   <2e-16 ***\n",
+            "---\n",
+            "Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1\n",
+            "\n",
+            "Correlation of Fixed Effects:\n",
+            "            (Intr)\n",
+            "SEVERE_TOXI -0.010\n",
+            "[1] \"====================\"\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "library(lme4)\n",
+        "\n",
+        "# Loop through each engagement field\n",
+        "\n",
+        "slopes <- c()\n",
+        "p_values <- c()\n",
+        "intercepts <- c()\n",
+        "\n",
+        "for (field in engagement_fields) {\n",
+        "  # Fit a Poisson fixed effects regression\n",
+        "  formula <- as.formula(paste(field, \"~ SEVERE_TOXICITY + 1 + (1|canal)\"))\n",
+        "  model <- glmer(formula, family = poisson, data = df_agg)\n",
+        "\n",
+        "  # Print the model summary\n",
+        "\n",
+        "  # Extract the slope and p-value for the SEVERE_TOXICITY coefficient\n",
+        "  summary <- summary(model)\n",
+        "  slope <- summary$coefficients[2, 1]\n",
+        "  p_value <- summary$coefficients[2, 4]\n",
+        "\n",
+        "  # Store the results\n",
+        "  slopes <- c(slopes, slope)\n",
+        "  p_values <- c(p_values, p_value)\n",
+        "\n",
+        "  print(\"====================\")\n",
+        "}"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "CASY-DDYdvP7",
+        "outputId": "484de539-5589-4cc4-a0ff-b3e4cdeaf8f0"
+      },
+      "execution_count": 20,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "[1] \"====================\"\n",
+            "[1] \"====================\"\n",
+            "[1] \"====================\"\n",
+            "[1] \"====================\"\n",
+            "[1] \"====================\"\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# prompt: Build a dataframe for the results, rounding to two decimals\n",
+        "\n",
+        "results <- data.frame(\n",
+        "  engagement_field = engagement_fields,\n",
+        "  slope = round(slopes, 2),\n",
+        "  p_value = round(p_values, 2)\n",
+        ")\n",
+        "\n",
+        "results\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 255
+        },
+        "id": "CSMRagLT8U2y",
+        "outputId": "46b1ef6e-9f39-4a96-b5de-05cb85f6b6ff"
+      },
+      "execution_count": 23,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/html": [
+              "<table class=\"dataframe\">\n",
+              "<caption>A data.frame: 5 × 3</caption>\n",
+              "<thead>\n",
+              "\t<tr><th scope=col>engagement_field</th><th scope=col>slope</th><th scope=col>p_value</th></tr>\n",
+              "\t<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>\n",
+              "</thead>\n",
+              "<tbody>\n",
+              "\t<tr><td>replyCount          </td><td>15.51</td><td>0</td></tr>\n",
+              "\t<tr><td>likeCount           </td><td>15.10</td><td>0</td></tr>\n",
+              "\t<tr><td>likes_video         </td><td> 8.01</td><td>0</td></tr>\n",
+              "\t<tr><td>vistas_video        </td><td> 9.79</td><td>0</td></tr>\n",
+              "\t<tr><td>cantidad_comentarios</td><td> 8.61</td><td>0</td></tr>\n",
+              "</tbody>\n",
+              "</table>\n"
+            ],
+            "text/markdown": "\nA data.frame: 5 × 3\n\n| engagement_field &lt;chr&gt; | slope &lt;dbl&gt; | p_value &lt;dbl&gt; |\n|---|---|---|\n| replyCount           | 15.51 | 0 |\n| likeCount            | 15.10 | 0 |\n| likes_video          |  8.01 | 0 |\n| vistas_video         |  9.79 | 0 |\n| cantidad_comentarios |  8.61 | 0 |\n\n",
+            "text/latex": "A data.frame: 5 × 3\n\\begin{tabular}{lll}\n engagement\\_field & slope & p\\_value\\\\\n <chr> & <dbl> & <dbl>\\\\\n\\hline\n\t replyCount           & 15.51 & 0\\\\\n\t likeCount            & 15.10 & 0\\\\\n\t likes\\_video          &  8.01 & 0\\\\\n\t vistas\\_video         &  9.79 & 0\\\\\n\t cantidad\\_comentarios &  8.61 & 0\\\\\n\\end{tabular}\n",
+            "text/plain": [
+              "  engagement_field     slope p_value\n",
+              "1 replyCount           15.51 0      \n",
+              "2 likeCount            15.10 0      \n",
+              "3 likes_video           8.01 0      \n",
+              "4 vistas_video          9.79 0      \n",
+              "5 cantidad_comentarios  8.61 0      "
+            ]
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "El 0 significa p-valor < 0.001 (de hecho bastante menos, pero da igual)\n",
+        "\n",
+        "Convirtamos a LaTeX..."
+      ],
+      "metadata": {
+        "id": "ibSpeZJEDKeQ"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "install.packages(\"kableExtra\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "XQqW_0ZlDfde",
+        "outputId": "bd7fdb94-363b-4d74-eaf9-967a8eabc3d3"
+      },
+      "execution_count": 27,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "Installing package into ‘/usr/local/lib/R/site-library’\n",
+            "(as ‘lib’ is unspecified)\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# prompt: Convert dataframe to Latex using kableExtra\n",
+        "\n",
+        "library(kableExtra)\n",
+        "\n",
+        "kable(results, \"latex\", caption = \"Poisson regression results for the effect of severe toxicity on engagement metrics\") %>%\n",
+        "  kable_styling() %>%\n",
+        "  column_spec(1, bold = TRUE)\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 364
+        },
+        "id": "c3RZ2szwDUl6",
+        "outputId": "85cad6c5-3636-4e2b-d6f7-cad714dda513"
+      },
+      "execution_count": 29,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\\begin{table}\n",
+              "\\centering\n",
+              "\\caption{Poisson regression results for the effect of severe toxicity on engagement metrics}\n",
+              "\\centering\n",
+              "\\begin{tabular}[t]{>{}l|r|r}\n",
+              "\\hline\n",
+              "engagement\\_field & slope & p\\_value\\\\\n",
+              "\\hline\n",
+              "\\textbf{replyCount} & 15.51 & 0\\\\\n",
+              "\\hline\n",
+              "\\textbf{likeCount} & 15.10 & 0\\\\\n",
+              "\\hline\n",
+              "\\textbf{likes\\_video} & 8.01 & 0\\\\\n",
+              "\\hline\n",
+              "\\textbf{vistas\\_video} & 9.79 & 0\\\\\n",
+              "\\hline\n",
+              "\\textbf{cantidad\\_comentarios} & 8.61 & 0\\\\\n",
+              "\\hline\n",
+              "\\end{tabular}\n",
+              "\\end{table}"
+            ]
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "dA3RNSQPDrhu"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
